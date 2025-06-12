@@ -1,0 +1,45 @@
+- name: Update supported Linux operating systems
+  hosts: all
+  become: yes
+  vars:
+    reboot_after_update: false  # Set this variable to true externally to trigger a reboot
+  tasks:
+    - name: Update packages on Ubuntu
+      apt:
+        update_cache: yes
+        upgrade: dist
+      when: ansible_facts['distribution'] == 'Ubuntu'
+
+    - name: Update packages on Debian
+      apt:
+        update_cache: yes
+        upgrade: dist
+      when: ansible_facts['distribution'] == 'Debian'
+
+    - name: Update packages on Fedora
+      dnf:
+        name: "*"
+        state: latest
+      when: ansible_facts['distribution'] == 'Fedora'
+
+    - name: Update packages on CentOS
+      yum:
+        name: "*"
+        state: latest
+      when: ansible_facts['distribution'] == 'CentOS'
+
+    - name: Update packages on AlmaLinux
+      dnf:
+        name: "*"
+        state: latest
+      when: ansible_facts['distribution'] == 'AlmaLinux'
+
+    - name: Update packages on RedHat
+      yum:
+        name: "*"
+        state: latest
+      when: ansible_facts['distribution'] == 'RedHat'
+
+    - name: Reboot the system if reboot_after_update is true
+      reboot:
+      when: reboot_after_update

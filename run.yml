@@ -1,0 +1,32 @@
+---
+- name: Get and run dynamic Ansible playbooks from HTTP endpoint with parameters
+  hosts: localhost
+  gather_facts: no
+  vars:
+    api_url: "https://example.com/api/playbooks"  # Replace with your actual endpoint
+  tasks:
+    - name: Get list of playbooks with parameters from API
+      uri:
+        url: "{{ api_url }}"
+        method: GET
+        return_content: yes
+        status_code: 200
+      register: playbook_response
+
+    - name: Set playbook list with parameters
+      set_fact:
+        playbook_list: "{{ playbook_response.content | from_json }}"
+
+    - name: Run each playbook from the list with parameters
+      ansible.builtin.command:
+        cmd: >-
+          ansible-playbook {{ item.name }}.yml {{ '--extra-vars ' ~ (item.parameters | to_json | quote) if item.parameters is defined else '' }}
+      loop: "{{ playbook_list }}"
+      args:
+        chdir: "{{ playbook_dir | default('.') }}"
+      register: playbook_results
+      ignore_errors: yes
+
+    - name: Print results
+      debug:
+        var: playbook_results
