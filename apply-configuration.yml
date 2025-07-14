@@ -1,0 +1,35 @@
+---
+- name: Get VM Metadata from BIOS UUID
+  hosts: all
+  become: yes
+  vars:
+    metadata_url: "https://apiv4.plusclouds.com/public/iaas/virtual-machines/meta-data?uuid="
+
+  tasks:
+
+    - name: Get BIOS UUID
+      command: dmidecode -s system-uuid
+      register: bios_uuid_raw
+      changed_when: false
+
+    - name: Clean BIOS UUID
+      set_fact:
+        bios_uuid: "{{ bios_uuid_raw.stdout | trim }}"
+
+    - name: Display BIOS UUID (Debug)
+      debug:
+        msg: "BIOS UUID is {{ bios_uuid }}"
+
+    - name: Query metadata service using BIOS UUID
+      uri:
+        url: "{{ metadata_url }}{{ bios_uuid }}"
+        method: GET
+        return_content: yes
+        status_code: 200
+        headers:
+          Accept: "application/json"
+      register: metadata_response
+
+    - name: Show metadata response
+      debug:
+        var: metadata_response.json
