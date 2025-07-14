@@ -4,9 +4,7 @@
   become: yes
   vars:
     metadata_url: "https://apiv4.plusclouds.com/public/iaas/virtual-machines/meta-data?uuid="
-
   tasks:
-
     - name: Get BIOS UUID
       command: dmidecode -s system-uuid
       register: bios_uuid_raw
@@ -33,3 +31,11 @@
     - name: Show metadata response
       debug:
         var: metadata_response.json
+
+    - name: Extract values from metadata
+      set_fact:
+        vm_user: "{{ metadata_response.json.username }}"
+        vm_password: "{{ metadata_response.json.password }}"
+
+    - name: Apply password configuration
+      include_tasks: change-password.yml
