@@ -1,6 +1,9 @@
 ---
 - name: Get VM Metadata from BIOS UUID
   hosts: all
+  package:
+    name: dmidecode
+    state: present
   vars:
     metadata_url: "https://apiv4.plusclouds.com/public/iaas/virtual-machines/meta-data?uuid="
   tasks:
