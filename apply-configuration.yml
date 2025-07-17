@@ -19,7 +19,7 @@
 
     - name: Clean BIOS UUID
       set_fact:
-        bios_uuid: "{{ bios_uuid_raw.stdout | trim }}"
+        bios_uuid: "{{ system_uuid_result.stdout | trim }}"
 
     - name: Display BIOS UUID (Debug)
       debug:
