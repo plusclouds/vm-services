@@ -9,10 +9,14 @@
         name: dmidecode
         state: present
 
-    - name: Get BIOS UUID
-      command: dmidecode -s system-uuid
-      register: bios_uuid_raw
+    - name: Get system UUID using dmidecode on Debian 12 and Ubuntu
+      command: /usr/sbin/dmidecode -s system-uuid
+      register: system_uuid_result
       changed_when: false
+      become: true
+      when: >
+        (ansible_distribution == "Debian" and ansible_distribution_major_version == "12") or
+        (ansible_distribution == "Ubuntu")
 
     - name: Clean BIOS UUID
       set_fact:
