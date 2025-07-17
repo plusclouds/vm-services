@@ -1,12 +1,14 @@
 ---
 - name: Get VM Metadata from BIOS UUID
   hosts: all
-  package:
-    name: dmidecode
-    state: present
   vars:
     metadata_url: "https://apiv4.plusclouds.com/public/iaas/virtual-machines/meta-data?uuid="
   tasks:
+    - name: Ensure dmidecode is installed
+      package:
+        name: dmidecode
+        state: present
+
     - name: Get BIOS UUID
       command: dmidecode -s system-uuid
       register: bios_uuid_raw
