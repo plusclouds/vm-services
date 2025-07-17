@@ -1,0 +1,21 @@
+- name: Install locales package (Debian/Ubuntu)
+  apt:
+    name: locales
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Generate en_US.UTF-8 locale
+  command: locale-gen en_US.UTF-8
+  when: ansible_os_family == "Debian"
+
+- name: Set system-wide locale (Debian/Ubuntu)
+  copy:
+    dest: /etc/default/locale
+    content: |
+      LANG=en_US.UTF-8
+      LC_ALL=en_US.UTF-8
+  when: ansible_os_family == "Debian"
+
+- name: Update current shell environment
+  shell: "update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8"
+  when: ansible_os_family == "Debian"
