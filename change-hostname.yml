@@ -1,0 +1,34 @@
+---
+- name: Set system hostname from metadata_response.json
+  hosts: localhost
+  connection: local
+  gather_facts: yes
+
+  tasks:
+    - name: Ensure hostname is defined
+      fail:
+        msg: "hostname is not defined"
+      when: hostname is not defined
+
+    - name: Normalize hostname to be RFC1123-compliant
+      set_fact:
+        normalized_hostname: "{{ hostname | lower | regex_replace('[^a-z0-9]+', '-') | regex_replace('(^-+|-+$)', '') | truncate(63, end='') }}"
+
+    - name: Set system hostname (runtime and persistent on most systems)
+      ansible.builtin.hostname:
+        name: "{{ normalized_hostname }}"
+
+    - name: Ensure /etc/hostname is updated (for persistence)
+      copy:
+        dest: /etc/hostname
+        content: "{{ normalized_hostname }}\n"
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Ensure /etc/hosts contains updated hostname entry
+      lineinfile:
+        path: /etc/hosts
+        regexp: '^127\\.0\\.1\\.1\\s+'
+        line: "127.0.1.1 {{ normalized_hostname }}"
+        state: present

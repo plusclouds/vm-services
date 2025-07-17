@@ -39,3 +39,10 @@
 
     - name: Apply password configuration
       include_tasks: change-password.yml
+
+    - name: Extract values for hostname configuration
+      set_fact:
+        hostname: "{{ metadata_response.json.hostname | default('default-hostname') }}"
+
+    - name: Apply hostname configuration
+      include_tasks: change-hostname.yml
