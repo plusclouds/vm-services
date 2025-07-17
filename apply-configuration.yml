@@ -13,7 +13,6 @@
       command: /usr/sbin/dmidecode -s system-uuid
       register: system_uuid_result
       changed_when: false
-      become: true
       when: >
         (ansible_distribution == "Debian" and ansible_distribution_major_version == "12") or
         (ansible_distribution == "Ubuntu")
