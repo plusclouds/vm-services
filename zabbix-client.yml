@@ -1,0 +1,45 @@
+---
+- name: Run Zabbix client bootstrap when enabled
+  hosts: all
+  gather_facts: false
+  become: true
+
+  vars:
+    client_script_path: "{{ playbook_dir }}/client-monitoring.sh"
+
+  pre_tasks:
+    - name: Require variables
+      ansible.builtin.assert:
+        that:
+          - is_zabbix_enabled is defined
+          - zabbix_server_ip is defined
+          - hostname is defined
+        fail_msg: "Set is_zabbix_enabled, zabbix_server_ip, and hostname variables."
+
+    - name: Check client script exists
+      ansible.builtin.stat:
+        path: "{{ client_script_path }}"
+      register: client_script
+
+    - name: Fail if client script is missing
+      ansible.builtin.fail:
+        msg: "Client script not found at {{ client_script_path }}"
+      when: not client_script.stat.exists
+
+    - name: Ensure client script is executable
+      ansible.builtin.file:
+        path: "{{ client_script_path }}"
+        mode: "0755"
+
+  tasks:
+    - name: Run client-monitoring.sh (active agent bootstrap)
+      ansible.builtin.command:
+        argv:
+          - "{{ client_script_path }}"
+          - "--server"
+          - "{{ zabbix_server_ip }}"
+          - "--hostname"
+          - "{{ hostname }}"
+      register: client_bootstrap
+      changed_when: client_bootstrap.rc == 0
+      when: is_zabbix_enabled | bool
